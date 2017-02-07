@@ -16,8 +16,8 @@ if ($^O eq 'darwin') { # if MAC OSX
 else {
         for (`$smartctl_cmd --scan`) {
             #splitting lines like "/dev/sda -d scsi # /dev/sda, SCSI device"
-            if ($_ =~ /^(\/dev\/)(.+?) -d.+/) {
-                $disk = $2;
+            if ($_ =~ /^(.*) #/) {
+                $disk = $1;
                 push @disks,$disk;
             }
         }
@@ -34,7 +34,7 @@ DISKLOOP:foreach my $disk (@disks) {
 
     chomp($disk);
     #SMART STATUS LOOP
-    foreach $line (`$smartctl_cmd -i /dev/$disk`) {
+    foreach $line (`$smartctl_cmd -i $disk`) {
 
         if ($line =~ /^Serial Number: +(.+)$/) {
             #print "Serial number is".$1."\n";
@@ -53,7 +53,7 @@ DISKLOOP:foreach my $disk (@disks) {
             }
             #if SMART is disabled then try to enable it (also offline tests etc)
             elsif ( $1 =~ /Disabled/ ) {
-                foreach (`smartctl -s on -o on -S on /dev/$disk`) {
+                foreach (`smartctl -s on -o on -S on $disk`) {
                     if (/SMART Enabled/) {  $smart_enabled = 1; }
                 }
             }
